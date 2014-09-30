@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="Gochat">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Gochat</title>
+
+    <link href="/bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!--<script src="/bower_components/angular/angular.min.js"></script>-->
+    <script src="http://cdn.sockjs.org/sockjs-0.3.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-4">
+
+        </div>
+        <div class="col-md-12">
+            <h1>Chat - Web Example</h1>
+            Input text: <input id="inputText" focus="true">
+            
+            <button onClick="sendMessage()" disabled="true" id="send">Send Msg</button>
+            
+            <br/>
+            Messages from server:</br>
+            <textarea cols=80 rows=20 id="output">
+            </textarea>
+            <br/>
+            status: <span id="status">connecting...</span>
+        </div>
+    </div>
+</div>
+
+
+<script>
+/*
+         var sock = new SockJS('http://localhost:3000');
+         sock.onopen = function() {
+             console.log('open');
+         };
+         sock.onmessage = function(e) {
+             console.log('message', e.data);
+         };
+         sock.onclose = function() {
+             console.log('close');
+         };
+*/
+
+var origin = window.location.origin;
+
+var sock = new SockJS(origin+'/chat')
+
+var token = ""+Math.floor(Math.random() * 100000);
+
+sock.onopen = function() {
+	console.log('connection open');
+	document.getElementById("status").innerHTML = "connected";
+	document.getElementById("send").disabled=false;
+};
+
+sock.onmessage = function(e) {
+	document.getElementById("output").value += e.data +"\n";
+};
+
+sock.onclose = function() {
+	console.log('connection closed');
+	document.getElementById("status").innerHTML = "disconnected";
+	document.getElementById("send").disabled=true;
+};
+
+function send(obj) {
+    var msg = JSON.stringify(obj);
+
+    console.log(msg);
+	sock.send(msg);
+}
+
+
+function sendMessage() {
+    send({
+        Token: token, Command: "message", Val: token + ": msg - " + Math.floor(Math.random() * 10000)
+    })
+}
+
+function sendJoinChat() {
+     send({
+        Token: token, Command: "join", Val: "chat"
+    })   
+
+sendMessage()
+     window.setInterval(sendMessage, 2000);
+}
+
+window.setTimeout(sendJoinChat, 500);
+/*
+        var app = angular.module('Gochat', []);
+        app.controller('ChatController', function($scope) {
+
+        });
+*/
+    </script>
+
+</body>
+</html>
