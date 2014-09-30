@@ -1,4 +1,4 @@
-package redis
+package pubsub
 
 import (
 	"github.com/garyburd/redigo/redis"

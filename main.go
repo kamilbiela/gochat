@@ -3,62 +3,26 @@ package main
 import (
 	"flag"
 	"fmt"
+	"gopkg.in/igm/sockjs-go.v2/sockjs"
 	"log"
-	// "github.com/jinzhu/gorm"
-	// elastigo "github.com/mattbaird/elastigo/lib"
-	"database/sql"
-	_ "github.com/go-sql-driver/mysql"
 	"net/http"
-
-	// "github.com/kamilbiela/gochat/pubsub"
-	// redisPubSub "github.com/kamilbiela/gochat/pubsub/redis"
 )
 
-type App struct {
-	DB *sql.DB
-}
-
-var AppCont App = App{}
-
 func main() {
+	// parse flags
 	flagFixture := flag.Bool("fixture", false, "specify to load fixtures")
 	flag.Parse()
 
-	AppCont.DB = initDB()
+	// init di container
+	container := NewContainer()
 
 	if *flagFixture {
 		fmt.Println("Loading fixtures...")
-		FixturesLoad(AppCont.DB)
+		FixturesLoad(container.getDB())
 		return
 	}
 
-	initSocketServer()
-	initHttp()
-	startHttp()
-}
-
-func initHttp() {
+	http.Handle("/chat/", sockjs.NewHandler("/chat", sockjs.DefaultOptions, socketHandler))
 	http.Handle("/", http.FileServer(http.Dir("old/public/")))
-}
-
-func startHttp() {
 	log.Fatal(http.ListenAndServe(":8080", nil))
-}
-
-func initDB() *sql.DB {
-	db, err := sql.Open("mysql", "root@tcp(127.0.0.1:3306)/gochat")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = db.Ping()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return db
-}
-
-func messageHandler() {
-
 }

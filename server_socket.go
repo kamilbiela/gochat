@@ -1,14 +1,13 @@
 package main
 
 import (
-	redisPubSub "github.com/kamilbiela/gochat/pubsub/redis"
+	"github.com/kamilbiela/gochat/pubsub"
 	"gopkg.in/igm/sockjs-go.v2/sockjs"
 	"log"
-	"net/http"
 )
 
 func socketHandler(sockSession sockjs.Session) {
-	pb := redisPubSub.InitPubSub()
+	pb := pubsub.InitPubSub()
 	pb.Subscribe("all")
 	log.Println("===== SOCKET OPEN ======")
 
@@ -34,8 +33,4 @@ func socketHandler(sockSession sockjs.Session) {
 	}
 
 	log.Println("===== SOCKET CLOSE ======")
-}
-
-func initSocketServer() {
-	http.Handle("/chat/", sockjs.NewHandler("/chat", sockjs.DefaultOptions, socketHandler))
 }
