@@ -31,11 +31,15 @@ func main() {
 
 	authChain := alice.New(middleware.Auth(container.GetAuth()))
 
+	sockjsHanlder := sockjs.NewHandler("/chat", sockjs.DefaultOptions, route.SocketHandler)
+
 	router := mux.NewRouter()
-	router.Handle("/chat/{v:.*}", sockjs.NewHandler("/chat", sockjs.DefaultOptions, route.SocketHandler))
+	router.Handle("/chat/{v:.*}", authChain.Then(sockjsHanlder))
 	router.Methods("POST").Subrouter().Handle("/auth", route.AuthRoute(container.GetAuth()))
-	router.Handle("/test", authChain.Then(route.TestRoute("test")))
-	router.Handle("/", http.FileServer(http.Dir("public")))
+	router.Handle("/test", authChain.Then(route.TestRoute("Works")))
+
+	// serve files
+	router.Handle("/", http.FileServer(http.Dir(container.GetConfig().Webdir)))
 
 	log.Fatal(http.ListenAndServe(":3000", handlers.LoggingHandler(os.Stdout, router)))
 }
