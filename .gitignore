@@ -24,4 +24,4 @@ _testmain.go
 *.prof
 
 /gochat
-bower_components
+/dumb.rdb

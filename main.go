@@ -3,9 +3,16 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/gorilla/handlers"
+	"github.com/gorilla/mux"
+	"github.com/justinas/alice"
+	"github.com/kamilbiela/gochat/lib"
+	"github.com/kamilbiela/gochat/middleware"
+	"github.com/kamilbiela/gochat/route"
 	"gopkg.in/igm/sockjs-go.v2/sockjs"
 	"log"
 	"net/http"
+	"os"
 )
 
 func main() {
@@ -14,15 +21,21 @@ func main() {
 	flag.Parse()
 
 	// init di container
-	container := NewContainer()
+	container := lib.NewContainer()
 
 	if *flagFixture {
 		fmt.Println("Loading fixtures...")
-		FixturesLoad(container.getDB())
+		lib.FixturesLoad(container.GetDB())
 		return
 	}
 
-	http.Handle("/chat/", sockjs.NewHandler("/chat", sockjs.DefaultOptions, socketHandler))
-	http.Handle("/", http.FileServer(http.Dir("old/public/")))
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	authChain := alice.New(middleware.Auth(container.GetAuth()))
+
+	router := mux.NewRouter()
+	router.Handle("/chat/{v:.*}", sockjs.NewHandler("/chat", sockjs.DefaultOptions, route.SocketHandler))
+	router.Methods("POST").Subrouter().Handle("/auth", route.AuthRoute(container.GetAuth()))
+	router.Handle("/test", authChain.Then(route.TestRoute("test")))
+	router.Handle("/", http.FileServer(http.Dir("public")))
+
+	log.Fatal(http.ListenAndServe(":3000", handlers.LoggingHandler(os.Stdout, router)))
 }

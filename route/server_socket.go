@@ -1,4 +1,4 @@
-package main
+package route
 
 import (
 	"github.com/kamilbiela/gochat/pubsub"
@@ -6,18 +6,16 @@ import (
 	"log"
 )
 
-func socketHandler(sockSession sockjs.Session) {
-	pb := pubsub.InitPubSub()
-	pb.Subscribe("all")
+func SocketHandler(sockSession sockjs.Session) {
 	log.Println("===== SOCKET OPEN ======")
 
-	defer pb.Unsubscribe("all")
-	defer pb.Close()
+	pb := pubsub.InitPubSub()
+	pb.Subscribe("all")
 
 	go func() {
 		for message := range pb.ReadMessage() {
 			if err := sockSession.Send(message); err != nil {
-				log.Println("99999")
+				log.Fatalln(err)
 				return
 			}
 		}
@@ -26,11 +24,16 @@ func socketHandler(sockSession sockjs.Session) {
 	// receive socket messages and handle them
 	for {
 		if rawMessage, err := sockSession.Recv(); err == nil {
+
+			// decide what to do with received message
+
 			pb.Publish("all", rawMessage)
 			continue
 		}
 		break
 	}
 
+	pb.Unsubscribe("all")
+	pb.Close()
 	log.Println("===== SOCKET CLOSE ======")
 }
