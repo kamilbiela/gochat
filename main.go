@@ -29,12 +29,18 @@ func main() {
 		return
 	}
 
-	authChain := alice.New(middleware.Auth(container.GetAuth()))
+	// handlers
+	sockjsHanlder := sockjs.NewHandler("/chat/[a-zA-Z0-9]+", sockjs.DefaultOptions, route.SocketHandler)
 
-	sockjsHanlder := sockjs.NewHandler("/chat", sockjs.DefaultOptions, route.SocketHandler)
+	// middlewares
+	authMiddleware := middleware.Auth(container.GetAuth())
 
+	// alice chains
+	authChain := alice.New(authMiddleware)
+
+	// router
 	router := mux.NewRouter()
-	router.Handle("/chat/{v:.*}", authChain.Then(sockjsHanlder))
+	router.Handle("/chat/{token}/{v:.*}", authChain.Then(sockjsHanlder))
 	router.Methods("POST").Subrouter().Handle("/auth", route.AuthRoute(container.GetAuth()))
 	router.Handle("/test", authChain.Then(route.TestRoute("Works")))
 

@@ -6,9 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Gochat</title>
 
-    <link href="/bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    
     <!--<script src="/bower_components/angular/angular.min.js"></script>-->
-    <script src="http://cdn.sockjs.org/sockjs-0.3.min.js"></script>
+    <script src="//cdn.jsdelivr.net/sockjs/0.3.4/sockjs.min.js"></script>
+	
+    <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
 </head>
 <body>
 
@@ -48,27 +50,7 @@
          };
 */
 
-var origin = window.location.origin;
-
-var sock = new SockJS(origin+'/chat')
-
 var token = ""+Math.floor(Math.random() * 100000);
-
-sock.onopen = function() {
-	console.log('connection open');
-	document.getElementById("status").innerHTML = "connected";
-	document.getElementById("send").disabled=false;
-};
-
-sock.onmessage = function(e) {
-	document.getElementById("output").value += e.data +"\n";
-};
-
-sock.onclose = function() {
-	console.log('connection closed');
-	document.getElementById("status").innerHTML = "disconnected";
-	document.getElementById("send").disabled=true;
-};
 
 function send(obj) {
     var msg = JSON.stringify(obj);
@@ -89,17 +71,34 @@ function sendJoinChat() {
         Token: token, Command: "join", Val: "chat"
     })   
 
-sendMessage()
-     window.setInterval(sendMessage, 2000);
+	sendMessage()
+    window.setInterval(sendMessage, 2000);
 }
 
-window.setTimeout(sendJoinChat, 500);
-/*
-        var app = angular.module('Gochat', []);
-        app.controller('ChatController', function($scope) {
+var origin = window.location.origin;
+var sock;
+$.post(origin + "/auth", JSON.stringify({"username": "test", "password": "test"})).done(function(data) {
+	sock = new SockJS(origin+'/chat/' + data.Token.Val + '/', null, {debug: true});
+	
+	sock.onopen = function() {
+		console.log('connection open');
+		document.getElementById("status").innerHTML = "connected";
+		document.getElementById("send").disabled=false;
+	};
+	
+	sock.onmessage = function(e) {
+		document.getElementById("output").value += e.data +"\n";
+	};
+	
+	sock.onclose = function() {
+		console.log('connection closed');
+		document.getElementById("status").innerHTML = "disconnected";
+		document.getElementById("send").disabled=true;
+	};
+	
+	window.setTimeout(sendJoinChat, 500);
+});
 
-        });
-*/
     </script>
 
 </body>

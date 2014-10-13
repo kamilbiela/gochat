@@ -3,8 +3,10 @@ package middleware
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/gorilla/mux"
 	"github.com/justinas/alice"
 	"github.com/kamilbiela/gochat/lib"
+	"log"
 	"net/http"
 	"time"
 )
@@ -25,15 +27,24 @@ func Auth(auth *lib.AuthService) alice.Constructor {
 	return func(handler http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			q := r.URL.Query()
+			var tokenStr string
 
 			tokensStr, ok := q["token"]
 
 			if !ok {
-				writeAuthError(w, "Missing token")
-				return
-			}
+				// try to find token in url
+				vars := mux.Vars(r)
+				tokenStr, ok = vars["token"]
 
-			tokenStr := string(tokensStr[0])
+				log.Println(vars)
+				log.Println(tokenStr, ok)
+				if !ok {
+					writeAuthError(w, "Missing token")
+					return
+				}
+			} else {
+				tokenStr = string(tokensStr[0])
+			}
 
 			tokenObj := auth.GetToken(tokenStr)
 
