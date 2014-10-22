@@ -40,8 +40,12 @@ func main() {
 
 	// router
 	router := mux.NewRouter()
+
+	// routes - auth
 	router.Handle("/chat/{token}/{v:.*}", authChain.Then(sockjsHanlder))
 	router.Methods("POST").Subrouter().Handle("/auth", route.AuthRoute(container.GetAuth()))
+
+	// routes - other
 	router.Handle("/test", authChain.Then(route.TestRoute("Works")))
 
 	// serve files

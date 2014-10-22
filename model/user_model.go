@@ -1,7 +1,9 @@
-package main
+package model
 
 type User struct {
-	id             int
-	organizationId int
-	name           string
+	Id             int
+	OrganizationId int
+	Name           string
+	Salt           string
+	Password       string
 }

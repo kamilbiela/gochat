@@ -1,4 +1,4 @@
-package main
+package model
 
 import (
 	"encoding/json"
@@ -54,7 +54,7 @@ func NewMessage(rawMessage string) (Message, error) {
 	m = Message{
 		Type:   t,
 		Token:  jm.Token,
-		UserId: GetUserIdForToken(jm.Token),
+		UserId: 123,
 		Val:    jm.Val,
 	}
 

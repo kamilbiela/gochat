@@ -8,7 +8,6 @@ import (
 	"github.com/kamilbiela/gochat/lib"
 	"log"
 	"net/http"
-	"time"
 )
 
 type authErrorResponse struct {
@@ -53,7 +52,7 @@ func Auth(auth *lib.AuthService) alice.Constructor {
 				return
 			}
 
-			if time.Now().After(tokenObj.ExpireAt) {
+			if !tokenObj.IsExpired() {
 				writeAuthError(w, "Token expired")
 				return
 			}

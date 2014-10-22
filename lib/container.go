@@ -3,19 +3,20 @@ package lib
 import (
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/kamilbiela/gochat/mapper"
 	"log"
 )
 
 type Container struct {
-	db     *sql.DB
-	config *Config
-	auth   *AuthService
+	db         *sql.DB
+	config     *Config
+	auth       *AuthService
+	userMapper *mapper.UserMapper
 }
 
 func NewContainer() *Container {
 	c := new(Container)
 	c.config = NewConfig()
-	c.auth = NewAuthService()
 	return c
 }
 
@@ -42,5 +43,16 @@ func (c *Container) GetConfig() *Config {
 }
 
 func (c *Container) GetAuth() *AuthService {
+	if c.auth == nil {
+		c.auth = NewAuthService(c.GetUserMapper())
+	}
 	return c.auth
+}
+
+func (c *Container) GetUserMapper() *mapper.UserMapper {
+	if c.userMapper == nil {
+		c.userMapper = mapper.NewUserMapper(c.GetDB())
+	}
+
+	return c.userMapper
 }

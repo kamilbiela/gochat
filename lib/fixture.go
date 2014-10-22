@@ -6,6 +6,7 @@ import (
 )
 
 func FixturesLoad(db *sql.DB) {
+	// @todo indexes
 	queries := []string{
 		// organization
 		`DROP TABLE IF EXISTS organization`,
@@ -16,15 +17,15 @@ func FixturesLoad(db *sql.DB) {
 	    );`,
 		`INSERT INTO organization VALUES (null, "gochat")`,
 
-		// room
-		`DROP TABLE IF EXISTS room`,
-		`CREATE TABLE room (
+		// space
+		`DROP TABLE IF EXISTS space`,
+		`CREATE TABLE space (
 			id INT NOT NULL AUTO_INCREMENT,
 			organization_id INT NOT NULL,
 			name TEXT NOT NULL,
 			PRIMARY KEY (id)
 	    );`,
-		`INSERT INTO room VALUES (null, 1, "room")`,
+		`INSERT INTO space VALUES (null, 1, "space")`,
 
 		// user
 		`DROP TABLE IF EXISTS user`,
@@ -32,13 +33,15 @@ func FixturesLoad(db *sql.DB) {
 			id INT NOT NULL AUTO_INCREMENT,
 			organization_id INT NOT NULL,
 			name TEXT NOT NULL,
+			salt CHAR(32) NOT NULL,
+			password CHAR(32) NOT NULL,
 			PRIMARY KEY (id)
 	    );`,
 		`INSERT INTO user VALUES 
-			(null, 1, "user1"),
-			(null, 1, "user2"),
-			(null, 1, "user3"),
-			(null, 1, "user4")
+			(null, 1, "user1", "", ""),
+			(null, 1, "user2", "", ""),
+			(null, 1, "user3", "", ""),
+			(null, 1, "user4", "", "")
 		`,
 	}
 

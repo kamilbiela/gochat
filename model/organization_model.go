@@ -1,4 +1,4 @@
-package main
+package model
 
 type Organization struct {
 	Id   int
