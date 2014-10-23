@@ -3,6 +3,7 @@ package mapper
 import (
 	"database/sql"
 	"github.com/kamilbiela/gochat/model"
+	"log"
 )
 
 type UserMapper struct {
@@ -30,4 +31,17 @@ func (u *UserMapper) GetByUsername(username string) (*model.User, error) {
 	}
 
 	return &user, nil
+}
+
+func (u *UserMapper) Save(user *model.User) {
+	stmt, err := u.db.Prepare("UPDATE user SET name=?, organization_id=? password=?, salt=? WHERE id = ?")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_, err = stmt.Exec(user.Name, user.OrganizationId, user.Password, user.Salt)
+
+	if err != nil {
+		log.Fatal(err)
+	}
 }

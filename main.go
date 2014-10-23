@@ -25,7 +25,7 @@ func main() {
 
 	if *flagFixture {
 		fmt.Println("Loading fixtures...")
-		lib.FixturesLoad(container.GetDB())
+		lib.FixturesLoad(container.GetDB(), container.GetAuth())
 		return
 	}
 

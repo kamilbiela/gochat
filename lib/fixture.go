@@ -5,7 +5,10 @@ import (
 	"log"
 )
 
-func FixturesLoad(db *sql.DB) {
+func FixturesLoad(db *sql.DB, auth *AuthService) {
+
+	pass, salt := auth.GeneratePassword("pass")
+
 	// @todo indexes
 	queries := []string{
 		// organization
@@ -34,20 +37,20 @@ func FixturesLoad(db *sql.DB) {
 			organization_id INT NOT NULL,
 			name TEXT NOT NULL,
 			salt CHAR(32) NOT NULL,
-			password CHAR(32) NOT NULL,
+			password VARCHAR(255) NOT NULL,
 			PRIMARY KEY (id)
 	    );`,
 		`INSERT INTO user VALUES 
-			(null, 1, "user1", "", ""),
-			(null, 1, "user2", "", ""),
-			(null, 1, "user3", "", ""),
-			(null, 1, "user4", "", "")
+			(null, 1, "user1", "` + salt + `", "` + pass + `"),
+			(null, 1, "user2", "` + salt + `", "` + pass + `"),
+			(null, 1, "user3", "` + salt + `", "` + pass + `")
 		`,
 	}
 
 	for _, q := range queries {
 		_, err := db.Exec(q)
 		if err != nil {
+			log.Println("chuj")
 			log.Fatal(err)
 		}
 	}
