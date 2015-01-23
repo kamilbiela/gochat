@@ -3,11 +3,12 @@ package middleware
 import (
 	"encoding/json"
 	"fmt"
+	"log"
+	"net/http"
+
 	"github.com/gorilla/mux"
 	"github.com/justinas/alice"
 	"github.com/kamilbiela/gochat/lib"
-	"log"
-	"net/http"
 )
 
 type authErrorResponse struct {
@@ -25,6 +26,8 @@ func writeAuthError(w http.ResponseWriter, msg string) {
 func Auth(auth *lib.AuthService) alice.Constructor {
 	return func(handler http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			handler.ServeHTTP(w, r)
+			return
 			q := r.URL.Query()
 			var tokenStr string
 
@@ -35,8 +38,10 @@ func Auth(auth *lib.AuthService) alice.Constructor {
 				vars := mux.Vars(r)
 				tokenStr, ok = vars["token"]
 
+				log.Println("/=========a\\")
 				log.Println(vars)
 				log.Println(tokenStr, ok)
+				log.Println("\\=========a/")
 				if !ok {
 					writeAuthError(w, "Missing token")
 					return

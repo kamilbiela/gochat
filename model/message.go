@@ -8,57 +8,28 @@ import (
 )
 
 const (
-	MSG_ON_CHAT = iota
-	MSG_JOIN_ROOM
-	MSG_LEAVE_ROOM
-	MSG_USER_AVAILABLE
-	MSG_USER_AWAY
-	MSG_USER_DONT_DISTURB
+	MSG_TEXT = iota
+	MSG_ROOM_JOIN
+	MSG_ROOM_LEAVE
+	MSG_USER_STATUS_AVAILABLE
+	MSG_USER_STATUS_AWAY
+	MSG_AUTH
 )
 
-type JsonMessage struct {
-	Command string
-	Token   string
-	Val     interface{}
-}
-
 type Message struct {
-	Type   int
-	Token  string
-	UserId int
-	Val    interface{}
+	Type int
+	Val  interface{}
 }
 
-func NewMessage(rawMessage string) (Message, error) {
-	var jm JsonMessage
+func NewMessage(rawMessage string) (*Message, error) {
 	var m Message
 
-	err := json.Unmarshal([]byte(rawMessage), &jm)
+	err := json.Unmarshal([]byte(rawMessage), &m)
 	if err != nil {
-		panic(err)
-		return m, err
+		return nil, err
 	}
 
-	var t int
-
-	switch jm.Command {
-	case "message":
-		t = MSG_ON_CHAT
-	case "join":
-		t = MSG_JOIN_ROOM
-	default:
-		// @todo this is error
-		t = MSG_ON_CHAT
-	}
-
-	m = Message{
-		Type:   t,
-		Token:  jm.Token,
-		UserId: 123,
-		Val:    jm.Val,
-	}
-
-	return m, nil
+	return &m, nil
 }
 
 // func HandleMessage(commChan chan string, pb pubsub.PubSuber, rawMessage string) error {

@@ -3,16 +3,14 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/gorilla/handlers"
-	"github.com/gorilla/mux"
-	"github.com/justinas/alice"
-	"github.com/kamilbiela/gochat/lib"
-	"github.com/kamilbiela/gochat/middleware"
-	"github.com/kamilbiela/gochat/route"
-	"gopkg.in/igm/sockjs-go.v2/sockjs"
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/gorilla/handlers"
+	"github.com/gorilla/mux"
+	"github.com/kamilbiela/gochat/lib"
+	"github.com/kamilbiela/gochat/route"
 )
 
 func main() {
@@ -29,24 +27,22 @@ func main() {
 		return
 	}
 
-	// handlers
-	sockjsHanlder := sockjs.NewHandler("/chat/[a-zA-Z0-9]+", sockjs.DefaultOptions, route.SocketHandler)
-
 	// middlewares
-	authMiddleware := middleware.Auth(container.GetAuth())
+	//authMiddleware := middleware.Auth(container.GetAuth())
 
 	// alice chains
-	authChain := alice.New(authMiddleware)
+	//authChain := alice.New(authMiddleware)
 
 	// router
 	router := mux.NewRouter()
 
 	// routes - auth
-	router.Handle("/chat/{token}/{v:.*}", authChain.Then(sockjsHanlder))
 	router.Methods("POST").Subrouter().Handle("/auth", route.AuthRoute(container.GetAuth()))
 
-	// routes - other
-	router.Handle("/test", authChain.Then(route.TestRoute("Works")))
+	// socket
+	socketRoute := route.SocketRoute()
+	//router.Handle("/chat/{token}", authChain.Then(socketRoute))
+	router.Handle("/chat", socketRoute)
 
 	// serve files
 	router.Handle("/", http.FileServer(http.Dir(container.GetConfig().Webdir)))

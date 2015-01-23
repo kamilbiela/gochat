@@ -1,105 +1,58 @@
 <!DOCTYPE html>
-<html lang="en" ng-app="Gochat">
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Gochat</title>
-
-    
-    <!--<script src="/bower_components/angular/angular.min.js"></script>-->
-    <script src="//cdn.jsdelivr.net/sockjs/0.3.4/sockjs.min.js"></script>
+<meta charset="utf-8"/>  <title>WebSocket Test</title>
+<script language="javascript" type="text/javascript">  var wsUri = "ws://localhost:3000/chat";
+var output;
+function init() {
+    output = document.getElementById("output");
+    testWebSocket();
+}
+function testWebSocket() {
+    websocket = new WebSocket(wsUri);
+    websocket.onopen = function (evt) {
+        onOpen(evt)
+    };
+    websocket.onclose = function (evt) {
+        onClose(evt)
+    };
+    websocket.onmessage = function (evt) {
+        onMessage(evt)
+    };
+    websocket.onerror = function (evt) {
+        onError(evt)
+    };
 	
-    <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
-</head>
-<body>
-
-<div class="container">
-    <div class="row">
-        <div class="col-md-4">
-
-        </div>
-        <div class="col-md-12">
-            <h1>Chat - Web Example</h1>
-            Input text: <input id="inputText" focus="true">
-            
-            <button onClick="sendMessage()" disabled="true" id="send">Send Msg</button>
-            
-            <br/>
-            Messages from server:</br>
-            <textarea cols=80 rows=20 id="output">
-            </textarea>
-            <br/>
-            status: <span id="status">connecting...</span>
-        </div>
-    </div>
-</div>
-
-
-<script>
-/*
-         var sock = new SockJS('http://localhost:3000');
-         sock.onopen = function() {
-             console.log('open');
-         };
-         sock.onmessage = function(e) {
-             console.log('message', e.data);
-         };
-         sock.onclose = function() {
-             console.log('close');
-         };
-*/
-
-var token = ""+Math.floor(Math.random() * 100000);
-
-function send(obj) {
-    var msg = JSON.stringify(obj);
-
-    console.log(msg);
-	sock.send(msg);
+}
+function onOpen(evt) {
+    writeToScreen("CONNECTED");
+    doSend("WebSocket rocks");
+	
+	setInterval(function() {
+		doSend("message " + i);
+	}, 1000);
+	//websocket.close();
+}
+function onClose(evt) {
+    writeToScreen("DISCONNECTED");
+}
+function onMessage(evt) {
+    writeToScreen('<span style="color: blue;">RESPONSE: ' + evt.data + '</span>');
+}
+function onError(evt) {
+    writeToScreen('<span style="color: red;">ERROR:</span> ' + evt.data);
+}
+function doSend(message) {
+    writeToScreen("SENT: " + message);
+    websocket.send(message);
+}
+function writeToScreen(message) {
+    var pre = document.createElement("p");
+    pre.style.wordWrap = "break-word";
+    pre.innerHTML = message;
+    output.appendChild(pre);
 }
 
 
-function sendMessage() {
-    send({
-        Token: token, Command: "message", Val: token + ": msg - " + Math.floor(Math.random() * 10000)
-    })
-}
+window.addEventListener("load", init, false);  
 
-function sendJoinChat() {
-     send({
-        Token: token, Command: "join", Val: "chat"
-    })   
-
-	sendMessage()
-    window.setInterval(sendMessage, 2000);
-}
-
-var origin = window.location.origin;
-var sock;
-$.post(origin + "/auth", JSON.stringify({"username": "test", "password": "test"})).done(function(data) {
-	sock = new SockJS(origin+'/chat/' + data.Token.Val + '/', null, {debug: true});
-	
-	sock.onopen = function() {
-		console.log('connection open');
-		document.getElementById("status").innerHTML = "connected";
-		document.getElementById("send").disabled=false;
-	};
-	
-	sock.onmessage = function(e) {
-		document.getElementById("output").value += e.data +"\n";
-	};
-	
-	sock.onclose = function() {
-		console.log('connection closed');
-		document.getElementById("status").innerHTML = "disconnected";
-		document.getElementById("send").disabled=true;
-	};
-	
-	window.setTimeout(sendJoinChat, 500);
-});
-
-    </script>
-
-</body>
-</html>
+</script>  <h2>WebSocket Test</h2>
+<div id="output"></div>

@@ -1,0 +1,5 @@
+{
+	"ext": "*.go",
+	"verbose": true,
+	"exec": "./run.sh"
+}
